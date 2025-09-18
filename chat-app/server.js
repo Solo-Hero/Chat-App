@@ -1,107 +1,64 @@
-const cluster = require('node:cluster');
-const http = require('node:http');
-const numCPUs = require('node:os').availableParallelism();
-const process = require('node:process');
-const { setupMaster, setupWorker } = require("@socket.io/sticky");
-const { createAdapter, setupPrimary } = require("@socket.io/cluster-adapter");
-const { Server } = require("socket.io");
-const { info } = require('node:console');
+// Import everything needed for the server
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const path = require("path");
 
-/**
- * Checking if the thread is a worker thread
- * or primary thread.
- */
+// Set up our Express app and HTTP server
+const app = express();
+const httpServer = http.createServer(app);
 
-if (cluster.isPrimary) {
+// Create our Socket.IO server with CORS enabled (so it plays nice with browsers)
+const io = new Server(httpServer, {
 
-    console.log(`Primary ${process.pid} is running`);
+    cors: {
 
-     /**
-     * Creating http-server for the master.
-     * All the child workers will share the same port (3000)
-     */
-    
-    const httpServer = http.createServer();
-    httpServer.listen(3000);
-
-    // Setting up stick session
-
-    setupMaster(httpServer, {
-
-        loadBalancingMethod: "least-connection"
-
-    });
-
-    // Setting up communication between workers and primary
-
-    setupPrimary();
-    cluster.setupPrimary({
-
-        serialization: "advanced"
-
-    });
-
-    // Launching workers based on the number of CPU threads.
-
-    for (let i = 0; i < numCPUs; i++) {
-
-        cluster.fork();
+        origin: "*",        // Allow connections from anywhere (for development)
+        methods: ["GET", "POST"]  // Only allow these HTTP methods
 
     }
 
-    cluster.on('exit', (worker, code, signal) => {
+});
 
-        console.log(`worker ${worker.process.pid} died`);
+// Serve up all our static files (HTML, CSS, JS) from the public folder
+app.use(express.static(path.join(__dirname, '../public')));
 
-      });
+// When someone visits the root URL, send them our chat interface
+app.get("/", (req, res) => {
 
-} else {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 
-    /**
-     * Setting up the worker threads
-     */
+});
 
-    console.log(`Worker ${process.pid} started`);
+// Socket.IO connection handling
+io.on("connection", (socket) => {
 
-    /**
-     * Creating Express App and Socket.io Server
-     * and binding them to HTTP Server.
-     */
+    console.log(`User connected: ${socket
+        .id}`);
 
-    const app = express();
-    const httpServer = http.createServer(app);
-    const io = new Server(httpServer);
+    // Listen for incoming messages from clients
+    socket.on("message", (data) => {
 
-    // Serve static files from the public directory
-    app.use(express.static('public'));
-
-    // Using the cluster socket.io adapter.
-
-    io.adapter(createAdapter());
-
-    // Setting up worker connection with the primary thread.
-
-    setupWorker(io);
-
-    io.on("connection", (socket) => {
-
-        // Handling socket connections.
-
-        socket.on("message", (data) => {
-
-            console.log(`Message arrived at ${process.pid}:`, data);
-
-            io.broadcast.emit("message", data);
-            
-        });
-    });
-
-    // Handle HTTP Requests
-
-    app.get("/", (req, res) => {
-
-        res.send("Hello world");
+        console.log(`Message received:`, data);
+        
+        // Send the message to everyone connected (including the sender)
+        io.emit("message", data);
 
     });
-}
+
+    // When someone leaves the chat, let us know
+    socket.on("disconnect", () => {
+
+        console.log(`User disconnected: ${socket.id}`);
+
+    });
+
+});
+
+// Fire up the server and let everyone know it's ready to rock!
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
+
+    console.log(`Server running on port ${PORT}`);
+    
+});

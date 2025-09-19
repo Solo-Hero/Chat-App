@@ -14,7 +14,7 @@
     "@socket.io/cluster-adapter": "^0.2.2",
     "@socket.io/sticky": "^1.0.4",
     "express": "^5.1.0",
-    "valkey": "^1.0.0",
+    "ioredis": "^5.7.0",
     "socket.io": "^4.8.1"
   }
 }

@@ -3,12 +3,12 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
-// Importing valkey client
-// By default the valkey client connects to valkey instance running at localhost:6379
-const { createClient } = require("valkey");
-const valkeyClient = createClient();
+// Importing Redis client (compatible with Valkey)
+// By default the Redis client connects to Redis/Valkey instance running at localhost:6379
+const Redis = require("ioredis");
+const valkeyClient = new Redis();
 
-// Connect to Valkey
+// Connect to Valkey (Redis-compatible)
 valkeyClient.on('error', (err) => {
     console.error('Valkey Client Error:', err);
 });
@@ -16,9 +16,6 @@ valkeyClient.on('error', (err) => {
 valkeyClient.on('connect', () => {
     console.log('Connected to Valkey');
 });
-
-// Connect to Valkey
-valkeyClient.connect();
 
 // Set up our Express app and HTTP server
 const app = express();
@@ -54,7 +51,7 @@ io.on("connection", async (socket) => {
 
     // Fetching all the messages from Valkey
     try {
-        const existingMessages = await valkeyClient.lRange("chat_messages", 0, -1);
+        const existingMessages = await valkeyClient.lrange("chat_messages", 0, -1);
         
         // Parsing the messages to JSON
         const parsedMessages = existingMessages.map((item) => JSON.parse(item));
@@ -72,7 +69,7 @@ io.on("connection", async (socket) => {
         
         try {
             // Store message in Valkey
-            await valkeyClient.lPush("chat_messages", JSON.stringify(data));
+            await valkeyClient.lpush("chat_messages", JSON.stringify(data));
         } catch (error) {
             console.error('Error storing message in Valkey:', error);
         }

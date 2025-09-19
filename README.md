@@ -10,12 +10,14 @@ This is my chat application project for SHSU COSC 2327 Introduction to Computer 
 
 ## To-Do
 
-- Add chat history and persistance.
+- ~~Add chat history and persistance.~~ ✅ **COMPLETED**
 - Remove the hard coded user I have for testing purposed and figure out how to implement a way to decide a username upon connection to the chat app.
 
 ## What This App Can Do
 
 - **Real-time Messaging**: Send and receive messages instantly using Socket.IO
+- **Message Persistence**: All messages are stored in Valkey database and loaded when users connect
+- **Chat History**: New users automatically receive the complete chat history upon connection
 - **Modern UI**: Clean, responsive interface built with Tailwind CSS
 - **Multiple Input Methods**: Send messages by clicking the send button or pressing Enter
 - **Smart Timestamps**: Messages show time for today, full date for older messages
@@ -29,6 +31,8 @@ Here's what I used to build this chat app:
 
 - **Backend**: Node.js with Express.js for the server
 - **Real-time Messaging**: Socket.IO for instant messaging between clients
+- **Database**: Valkey (Redis-compatible) for message persistence and chat history
+- **Database Client**: ioredis for connecting to Valkey database
 - **Frontend**: HTML5, Tailwind CSS for styling, and vanilla JavaScript
 - **Static File Serving**: Express static middleware to serve frontend files
 - **CORS Support**: Configured to work seamlessly with browsers
@@ -54,41 +58,62 @@ Chat-App/
 
 Here's how to get it running:
 
-1. **Navigate to the project folder:**
+1. **Install Valkey database:**
+   ```bash
+   # On Ubuntu/Debian
+   sudo apt install valkey
+   
+   # On macOS
+   brew install valkey
+   
+   # Or use Docker
+   docker run -p 6379:6379 valkey/valkey:latest
+   ```
+
+2. **Start Valkey server:**
+   ```bash
+   sudo systemctl start valkey.service
+   ```
+
+3. **Navigate to the project folder:**
    ```bash
    cd chat-app
    ```
 
-2. **Install all the required packages:**
+4. **Install all the required packages:**
    ```bash
    npm install
    ```
 
-3. **Start the server:**
+5. **Start the server:**
    ```bash
    node server.js
    ```
    *(You can also just run `server.js` directly in your favorite code editor like VS Code, VSCodium, etc.)*
 
-4. **Open the chat app:**
+6. **Open the chat app:**
    - Fire up your browser and head to `http://localhost:3000`
-   - You'll see the chat interface ready to use.
+   - You'll see the chat interface ready to use with full chat history!
 
 ## How It All Works
 
 Here's the behind-the-scenes magic:
 
 1. **Server Setup**: Express server handles HTTP requests and serves static files
-2. **Socket.IO Connection**: When you visit the page, your browser connects to the server via WebSocket
-3. **Message Journey**: 
+2. **Database Connection**: Server connects to Valkey database for message persistence
+3. **Socket.IO Connection**: When you visit the page, your browser connects to the server via WebSocket
+4. **Chat History Loading**: New users automatically receive all previous messages from Valkey
+5. **Message Journey**: 
    - You type a message and hit send (or press Enter)
    - The message gets sent to the server via Socket.IO
+   - Server stores the message in Valkey database
    - Server broadcasts it to everyone connected
    - All connected clients receive and display the message
-4. **Smart Features**: 
+6. **Smart Features**: 
    - Timestamps show time for today, full date for older messages
    - User avatars display the first letter of the username
    - Enter key sends messages, Shift+Enter creates new lines
+   - Complete chat history is preserved and loaded for new users
 
 ## Dependencies
 
@@ -96,9 +121,9 @@ These are the packages that make this chat app tick:
 
 - `express`: The web framework that serves up static files and handles HTTP requests
 - `socket.io`: Powers the real-time messaging - messages fly back and forth instantly
+- `ioredis`: Redis-compatible client for connecting to Valkey database and storing messages
 - `@socket.io/cluster-adapter`: Makes Socket.IO work with clustering (for future scaling)
 - `@socket.io/sticky`: Keeps your session connected to the right worker process
-- `ioredis`: Redis client for cluster communication (for advanced setups)
 
 ## Contributors
 

@@ -2,7 +2,7 @@
 - **Chat Application**
 - **Course Name:** COSC 2327 Introduction to Computer Networks.
 - **Instructor Name:** Professor Kubra Kose
-- **Project Option Chosen:** Option A
+- **Project Option Chosen:** Project 1 Option A
 - **IDE/Environment Used:** VSCodium
 - **Submission Deadline:** December 4th 2025
 

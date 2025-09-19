@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
 
 });
 
-// Fire up the server and let everyone know it's ready to rock!
+// Fire up the server
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
 

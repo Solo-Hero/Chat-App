@@ -1,5 +1,17 @@
 ## About This Project
-This is my chat application project for SHSU COSC 2327 Introduction to Computer Networks. I am building a fully functional real-time chat app using Node.js, Express, and Socket.IO.
+- **Chat Application**
+- **Course Name:** COSC 2327 Introduction to Computer Networks.
+- **Instructor Name:** Professor Kubra Kose
+- **Project Option Chosen:** Option A
+- **IDE/Environment Used:** VSCodium
+- **Submission Deadline:** December 4th 2025
+
+This is my chat application project for SHSU COSC 2327 Introduction to Computer Networks. I am building a demo of a fully functional real-time chat app using Node.js, Express, and Socket.IO.
+
+## To-Do
+
+- Add chat history and persistance.
+- Remove the hard coded user I have for testing purposed and figure out how to implement a way to decide a username upon connection to the chat app.
 
 ## What This App Can Do
 
@@ -16,7 +28,7 @@ This is my chat application project for SHSU COSC 2327 Introduction to Computer 
 Here's what I used to build this chat app:
 
 - **Backend**: Node.js with Express.js for the server
-- **Real-time Magic**: Socket.IO for instant messaging between clients
+- **Real-time Messaging**: Socket.IO for instant messaging between clients
 - **Frontend**: HTML5, Tailwind CSS for styling, and vanilla JavaScript
 - **Static File Serving**: Express static middleware to serve frontend files
 - **CORS Support**: Configured to work seamlessly with browsers
@@ -60,7 +72,7 @@ Here's how to get it running:
 
 4. **Open the chat app:**
    - Fire up your browser and head to `http://localhost:3000`
-   - You'll see the chat interface ready to use!
+   - You'll see the chat interface ready to use.
 
 ## How It All Works
 

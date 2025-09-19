@@ -3,6 +3,22 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+// Importing valkey client
+// By default the valkey client connects to valkey instance running at localhost:6379
+const { createClient } = require("valkey");
+const valkeyClient = createClient();
+
+// Connect to Valkey
+valkeyClient.on('error', (err) => {
+    console.error('Valkey Client Error:', err);
+});
+
+valkeyClient.on('connect', () => {
+    console.log('Connected to Valkey');
+});
+
+// Connect to Valkey
+valkeyClient.connect();
 
 // Set up our Express app and HTTP server
 const app = express();
@@ -31,15 +47,35 @@ app.get("/", (req, res) => {
 });
 
 // Socket.IO connection handling
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
 
     console.log(`User connected: ${socket
         .id}`);
 
-    // Listen for incoming messages from clients
-    socket.on("message", (data) => {
+    // Fetching all the messages from Valkey
+    try {
+        const existingMessages = await valkeyClient.lRange("chat_messages", 0, -1);
+        
+        // Parsing the messages to JSON
+        const parsedMessages = existingMessages.map((item) => JSON.parse(item));
+        
+        // Sending all the messages to the user
+        socket.emit("historical_messages", parsedMessages);
+    } catch (error) {
+        console.error('Error fetching historical messages from Valkey:', error);
+    }
 
-        console.log(`Message received:`, data);
+    // Listen for incoming messages from clients
+    socket.on("message", async (data) => {
+
+        console.log(`Message arrived at ${process.pid}:`, data);
+        
+        try {
+            // Store message in Valkey
+            await valkeyClient.lPush("chat_messages", JSON.stringify(data));
+        } catch (error) {
+            console.error('Error storing message in Valkey:', error);
+        }
         
         // Send the message to everyone connected (including the sender)
         io.emit("message", data);

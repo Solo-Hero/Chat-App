@@ -51,6 +51,26 @@ socket.on("message", function(data) {
 
 });
 
+// Listen for historical messages when connecting
+socket.on("historical_messages", function(messages) {
+    
+    // Clear any existing messages first (in case of reconnection)
+    const chatMessages = document.getElementById("chat-messages");
+    chatMessages.innerHTML = "";
+    
+    // Add each historical message
+    for (let message of messages) {
+        const html = generateMessageHTML(message.username, message.timestamp, message.message);
+        const element = document.createElement("li");
+        element.innerHTML = html;
+        chatMessages.appendChild(element);
+    }
+    
+    // Scroll to bottom to show latest messages
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+});
+
 // Function to send a message (used by both button click and Enter key)
 function sendMessage() {
 

@@ -12,6 +12,9 @@ This is my chat application project for SHSU COSC 2327 Introduction to Computer 
 
 - ~~Add chat history and persistance.~~ ✅ **COMPLETED**
 - Remove the hard coded user I have for testing purposed and figure out how to implement a way to decide a username upon connection to the chat app.
+- Add the ability to create and join group chats.
+- Add some CSS stuff to make everything look pretty.
+- Think of more stuff to add, because this project isn't due until December 4th, and I'm pretty much already done with it.
 
 ## What This App Can Do
 

@@ -1,9 +1,9 @@
 ## About This Project
-- **Chat Application**
+- **Chat Application Project 1A**
 - **Course Name:** COSC 2327 Introduction to Computer Networks.
 - **Instructor Name:** Professor Kubra Kose
 - **Project Option Chosen:** Project 1 Option A
-- **IDE/Environment Used:** VSCodium
+- **IDE/Environment Used:** VSCodium & Github Desktop App
 - **Submission Deadline:** December 4th 2025
 
 This is my chat application project for SHSU COSC 2327 Introduction to Computer Networks. I am building a demo of a fully functional real-time chat app using Node.js, Express, and Socket.IO.
@@ -13,8 +13,10 @@ This is my chat application project for SHSU COSC 2327 Introduction to Computer 
 - ~~Add chat history and persistance.~~ ✅ **COMPLETED**
 - Remove the hard coded user I have for testing purposed and figure out how to implement a way to decide a username upon connection to the chat app.
 - Add the ability to create and join group chats.
-- Add some CSS stuff to make everything look pretty.
-- Think of more stuff to add, because this project isn't due until December 4th, and I'm pretty much already done with it.
+- Figure out how to add a text to speech voice that sounds like Donalad Duck.
+- If I figure out how to add the first text to speech voice add more for fun.
+- Add some CSS stuff to make everything look nicer than a giant white page with "Chat" in the top left corner.
+- Figure out more stuff to add if I have the time as this project isn't due until December 4th 2025.
 
 ## What This App Can Do
 
@@ -113,7 +115,7 @@ Here's the behind-the-scenes magic:
    - Server broadcasts it to everyone connected
    - All connected clients receive and display the message
 6. **Smart Features**: 
-   - Timestamps show time for today, full date for older messages
+   - Timestamps show time for same day for recent messages, full date for older messages
    - User avatars display the first letter of the username
    - Enter key sends messages, Shift+Enter creates new lines
    - Complete chat history is preserved and loaded for new users

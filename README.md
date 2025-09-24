@@ -1,5 +1,5 @@
 ## About This Project
-- **Chat Application Project 1A**
+- **Chat Application**
 - **Course Name:** COSC 2327 Introduction to Computer Networks.
 - **Instructor Name:** Professor Kubra Kose
 - **Project Option Chosen:** Project 1 Option A

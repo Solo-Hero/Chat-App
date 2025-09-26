@@ -11,7 +11,7 @@ This is my chat application project for SHSU COSC 2327 Introduction to Computer 
 ## To-Do
 
 - ~~Add chat history and persistance.~~ ✅ **COMPLETED**
-- Remove the hard coded user I have for testing purposed and figure out how to implement a way to decide a username upon connection to the chat app.
+- ~~Remove the hard coded user I have for testing purposed and figure out how to implement a way to decide a username upon connection to the chat app.~~ ✅ **COMPLETED**
 - Add the ability to create and join group chats.
 - Figure out how to add a text to speech voice that sounds like Donalad Duck.
 - If I figure out how to add the first text to speech voice add more for fun.
@@ -23,12 +23,14 @@ This is my chat application project for SHSU COSC 2327 Introduction to Computer 
 - **Real-time Messaging**: Send and receive messages instantly using Socket.IO
 - **Message Persistence**: All messages are stored in Valkey database and loaded when users connect
 - **Chat History**: New users automatically receive the complete chat history upon connection
-- **Modern UI**: Clean, responsive interface built with Tailwind CSS
+- **Username Selection**: Users must choose a unique username before joining the chat
+- **Modern UI**: Clean, responsive interface built with Tailwind CSS featuring a modal-based username selection
 - **Multiple Input Methods**: Send messages by clicking the send button or pressing Enter
 - **Smart Timestamps**: Messages show time for today, full date for older messages
 - **User Avatars**: Each message displays a colorful avatar with the user's initial
 - **Group Chat**: Messages get broadcast to everyone connected to the chat
 - **Static File Serving**: Serves up HTML, CSS, and JavaScript files from the public folder
+- **Error Handling**: Error messages for username conflicts and validation issues
 
 ## Tech Stack
 
@@ -39,8 +41,10 @@ Here's what I used to build this chat app:
 - **Database**: Valkey (Redis-compatible) for message persistence and chat history
 - **Database Client**: ioredis for connecting to Valkey database
 - **Frontend**: HTML5, Tailwind CSS for styling, and vanilla JavaScript
+- **UI Framework**: Tailwind CSS with custom utility classes for responsive design
 - **Static File Serving**: Express static middleware to serve frontend files
 - **CORS Support**: Configured to work seamlessly with browsers
+- **Client-side Validation**: JavaScript-based username validation with regex patterns
 
 ## Project Structure (STILL A WORK IN PROGRESS)
 
@@ -98,7 +102,7 @@ Here's how to get it running:
 
 6. **Open the chat app:**
    - Fire up your browser and head to `http://localhost:3000`
-   - You'll see the chat interface ready to use with full chat history!
+   - You'll see the chat interface ready to use with full chat history.
 
 ## How It All Works
 
@@ -107,18 +111,23 @@ Here's the behind-the-scenes magic:
 1. **Server Setup**: Express server handles HTTP requests and serves static files
 2. **Database Connection**: Server connects to Valkey database for message persistence
 3. **Socket.IO Connection**: When you visit the page, your browser connects to the server via WebSocket
-4. **Chat History Loading**: New users automatically receive all previous messages from Valkey
-5. **Message Journey**: 
+4. **Username Selection Flow**:
+   - New users see a modal popup asking for a username
+   - Client-side validation checks username format (2-20 characters, alphanumeric with underscores/hyphens)
+   - Username is sent to server for availability checking
+5. **Chat History Loading**: New users automatically receive all previous messages from Valkey after username selection
+6. **Message Journey**: 
    - You type a message and hit send (or press Enter)
    - The message gets sent to the server via Socket.IO
    - Server stores the message in Valkey database
    - Server broadcasts it to everyone connected
    - All connected clients receive and display the message
-6. **Smart Features**: 
+7. **Smart Features**: 
    - Timestamps show time for same day for recent messages, full date for older messages
    - User avatars display the first letter of the username
    - Enter key sends messages, Shift+Enter creates new lines
    - Complete chat history is preserved and loaded for new users
+   - Real-time username conflict detection and error handling
 
 ## Dependencies
 

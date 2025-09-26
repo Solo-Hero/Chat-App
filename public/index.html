@@ -1,62 +1,170 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="business">
 <head>
-    <!-- Standard HTML5 meta tags for character encoding and responsive design -->
+    <!-- 
+        Basic HTML setup - these meta tags tell the browser how to handle our page
+        UTF-8 ensures we can use emojis and special characters in chat messages
+    -->
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
 
-    <!-- External dependencies: Tailwind CSS for styling and Socket.IO client library -->
+    <!-- 
+        Loading our external libraries
+        Tailwind CSS: Makes styling super easy with utility classes (no need to write custom CSS)
+        Socket.IO: Lets us talk to the server in real-time without refreshing the page
+    -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/socket.io/socket.io.js"></script>
 
 </head>
 <body>
 
-    <!-- Main container: Full screen height grid layout -->
+    <!-- 
+        Username Selection Modal - The first thing users see!
+        This popup appears when someone visits the chat, asking them to pick a username
+        We use a semi-transparent overlay (bg-black bg-opacity-50) to focus attention on the form
+        The z-50 class ensures this modal appears above everything else on the page
+    -->
+    <div id="username-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      
+      <!-- 
+          The actual modal box - this is where the magic happens
+          We give it a nice white background, rounded corners, and a subtle shadow
+          The max-width ensures it doesn't get too wide on large screens
+      -->
+      <div class="bg-white rounded-lg p-6 w-96 max-w-md mx-4 shadow-xl">
+        
+        <h2 class="text-xl font-bold mb-4 text-center text-gray-800">Choose Your Username</h2>
+        
+        <!-- 
+            Username form - this is where users type their desired username
+            We use a proper form element so users can press Enter to submit
+            The space-y-4 class adds nice spacing between form elements
+        -->
+        <form id="username-form" class="space-y-4">
+          
+          <!-- 
+              Username input field - where users type their chosen name
+              The focus:ring-2 focus:ring-indigo-500 gives a nice blue glow when clicked
+              The transition-colors makes the color changes smooth and pleasant
+              The required attribute ensures users can't submit without entering something
+          -->
+          <input type="text" id="username-input" placeholder="Enter your username" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                 required>
+          
+          <!-- 
+              Error message area - this stays hidden until there's a problem
+              We show validation errors here (like "username too short" or "already taken")
+              The hidden class keeps it invisible until we need to show an error
+          -->
+          <div id="username-error" class="text-red-500 text-sm hidden"></div>
+          
+          <!-- 
+              Join Chat button - the big blue button that gets users into the chat
+              We use hover:bg-indigo-600 to make it slightly darker when you hover over it
+              The transition-colors makes the hover effect smooth and professional
+          -->
+          <button type="submit" id="join-chat" 
+                  class="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+            Join Chat
+          </button>
+          
+        </form>
+        
+      </div>
+      
+    </div>
+
+    <!-- 
+        Main Chat Interface - This is where the real action happens!
+        We use a full-screen grid layout (h-screen) to make the chat take up the entire browser window
+        The flex column layout inside gives us a nice header, scrollable messages area, and fixed input at the bottom
+    -->
     <div class="grid h-screen">
       
-        <!-- Chat container: Flexbox column layout taking full height -->
-        <div class="flex max-h-screen flex-col">
+      <div class="flex max-h-screen flex-col">
+        
+        <!-- 
+            Chat Header - The top bar that shows "Chat" and stays fixed
+            We give it a subtle border at the bottom to separate it from the messages
+            The bg-white ensures it has a clean background that stands out
+        -->
+        <header class="border-b border-gray-200 py-4 px-4 bg-white">
           
-          <!-- Chat header: Fixed header with app title and bottom border -->
-          <div class="header text-md border-b border-gray-200 py-4 pl-4 font-bold">Chat</div>
+          <h1 class="text-lg font-bold text-gray-800">Chat</h1>
           
-          <!-- Messages area: Scrollable container for chat messages -->
-          <div class="chat-messages flex-1 overflow-y-scroll">
-            <!-- Messages list: Container for dynamically added chat messages -->
-            <ul class="space-y-4" id="chat-messages">
-
-              <!-- Messages will be dynamically inserted here by JavaScript -->
-    
-            </ul>
-          </div>
+        </header>
+        
+        <!-- 
+            Messages Container - This is where all the chat messages live
+            The flex-1 makes it take up all available space between header and footer
+            overflow-y-auto lets users scroll through messages when there are too many to fit
+            We use a light gray background (bg-gray-50) to make the messages stand out
+        -->
+        <main class="flex-1 overflow-y-auto bg-gray-50">
           
-          <!-- Input area: Fixed bottom section for typing and sending messages -->
-          <div class="input-container p-4">
-            <div class="input-area flex h-28 w-full flex-col space-y-2 rounded-2xl border-2 border-gray-200 p-3">
-              <!-- Text input: Multi-line textarea for typing messages (has ID for JavaScript access) -->
-              <textarea id="message" class="w-full flex-1 outline-none"></textarea>
-              <!-- Button row: Contains send button and any future controls -->
-              <div class="buttons flex flex-row items-center space-x-2 align-baseline">
-                <!-- Spacer: Pushes send button to the right -->
-                <div class="flex-1">
-                </div>
-                <!-- Send button: Circular button with paper plane icon (has ID for JavaScript access) -->
-                <div>
-                  <button id="send-message" class="float-right rounded-xl bg-indigo-500 p-2">
-                    <!-- Send icon: SVG paper plane icon for sending messages -->
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-indigo-600">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+          <ul id="chat-messages" class="space-y-4 p-4">
+            <!-- 
+                This is where JavaScript will dynamically add all the chat messages
+                Each message gets added as a new <li> element with the user's name, timestamp, and message
+                The space-y-4 class adds nice spacing between each message
+            -->
+          </ul>
+          
+        </main>
+        
+        <!-- 
+            Message Input Area - Where users type their messages
+            This stays fixed at the bottom so it's always accessible
+            We use a form so users can press Enter to send messages
+            The border-t gives it a nice separation from the messages above
+        -->
+        <footer class="p-4 bg-white border-t border-gray-200">
+          
+          <form id="message-form" class="flex h-28 w-full flex-col space-y-2 rounded-2xl border-2 border-gray-200 p-3 bg-white">
+            
+            <!-- 
+                Message textarea - where users type their thoughts
+                We set it to 3 rows initially, but it can grow if needed
+                The resize-none prevents users from manually resizing it (we want it to stay consistent)
+                The placeholder text gives users a hint about what to do
+            -->
+            <textarea id="message" 
+                      placeholder="Type your message..." 
+                      class="w-full flex-1 outline-none resize-none"
+                      rows="3"></textarea>
+            
+            <!-- 
+                Send button container - we put the button in its own div for better control
+                The flex justify-end pushes the button to the right side
+            -->
+            <div class="flex justify-end">
+              
+              <!-- 
+                  Send button - the paper plane icon that sends messages
+                  We use a nice rounded design with hover effects
+                  The SVG is a paper plane icon that's universally recognized for "send"
+                  The transition-colors makes the hover effect smooth
+              -->
+              <button type="submit" id="send-message" 
+                      class="rounded-xl bg-indigo-500 p-2 hover:bg-indigo-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                </svg>
+              </button>
+              
             </div>
-          </div>
-        </div>
+            
+          </form>
+          
+        </footer>
+        
       </div>
+      
+    </div>
 
     <!-- Custom JavaScript: Main application logic for chat functionality -->
     <script src="/js/main.js"></script>

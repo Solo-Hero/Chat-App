@@ -148,3 +148,7 @@ These are the packages that make this chat app tick:
 ## Contributors
 
 - **Mason R. Murphy**
+
+## Credits
+
+- inital code creation and understanding of configuring Websocket with Node.js came from [this guide.](https://deadsimplechat.com/blog/websockets-and-nodejs-real-time-chat-app/)

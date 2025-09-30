@@ -24,11 +24,14 @@ This is my chat application project for SHSU COSC 2327 Introduction to Computer 
 - **Message Persistence**: All messages are stored in Valkey database and loaded when users connect
 - **Chat History**: New users automatically receive the complete chat history upon connection
 - **Username Selection**: Users must choose a unique username before joining the chat
+- **Username Validation**: Client-side validation ensures usernames meet requirements (2-20 characters, alphanumeric with underscores/hyphens)
 - **Modern UI**: Clean, responsive interface built with Tailwind CSS featuring a modal-based username selection
 - **Multiple Input Methods**: Send messages by clicking the send button or pressing Enter
 - **Smart Timestamps**: Messages show time for today, full date for older messages
 - **User Avatars**: Each message displays a colorful avatar with the user's initial
 - **Group Chat**: Messages get broadcast to everyone connected to the chat
+- **Chat History Management**: Clear all chat history with confirmation dialog
+- **Message Pagination**: Load more older messages with "Load More" button
 - **Static File Serving**: Serves up HTML, CSS, and JavaScript files from the public folder
 - **Error Handling**: Error messages for username conflicts and validation issues
 
@@ -128,6 +131,9 @@ Here's the behind-the-scenes magic:
    - Enter key sends messages, Shift+Enter creates new lines
    - Complete chat history is preserved and loaded for new users
    - Real-time username conflict detection and error handling
+   - "Load More" button to fetch older messages in batches of 50
+   - "Clear History" button with confirmation dialog to prevent accidental deletion
+   - All connected users are notified when history is cleared
 
 ## Dependencies
 

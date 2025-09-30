@@ -94,7 +94,36 @@
         -->
         <header class="border-b border-gray-200 py-4 px-4 bg-white">
           
-          <h1 class="text-lg font-bold text-gray-800">Chat</h1>
+          <div class="flex justify-between items-center">
+            <h1 class="text-lg font-bold text-gray-800">Chat</h1>
+            
+            <!-- 
+                Chat Controls - Buttons for managing chat history
+                We put these in the header so they're always accessible
+            -->
+            <div class="flex space-x-2">
+              
+              <!-- 
+                  Load More Messages Button - Loads older messages when clicked
+                  This button appears at the top of the messages area
+              -->
+              <button id="load-more-btn" 
+                      class="hidden bg-gray-500 text-white px-3 py-1 rounded-md text-sm hover:bg-gray-600 transition-colors">
+                Load More
+              </button>
+              
+              <!-- 
+                  Clear History Button - Clears all chat history
+                  I decided to use a red color, because who doesn't want to press the big red button?
+              -->
+              <button id="clear-history-btn" 
+                      class="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition-colors">
+                Clear History
+              </button>
+              
+            </div>
+            
+          </div>
           
         </header>
         
@@ -161,6 +190,47 @@
           </form>
           
         </footer>
+        
+      </div>
+      
+    </div>
+
+    <!-- 
+        Clear History Confirmation Modal - Safety check before clearing
+        This modal appears when users click "Clear History" to prevent accidental deletion
+        We use a semi-transparent overlay and centered modal for focus
+    -->
+    <div id="clear-confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      
+      <!-- 
+          The confirmation modal box - asks user to confirm the destructive action
+          We give it a nice white background, rounded corners, and a subtle shadow
+      -->
+      <div class="bg-white rounded-lg p-6 w-96 max-w-md mx-4 shadow-xl">
+        
+        <h2 class="text-xl font-bold mb-4 text-center text-gray-800">Clear Chat History?</h2>
+        
+        <p class="text-gray-600 mb-6 text-center">
+          This will permanently delete all chat messages. This action cannot be undone.
+        </p>
+        
+        <!-- 
+            Confirmation buttons - Yes to confirm, No to cancel
+            We use different colors to make the choice clear
+        -->
+        <div class="flex space-x-3">
+          
+          <button id="confirm-clear" 
+                  class="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
+            Yes, Clear All
+          </button>
+          
+          <button id="cancel-clear" 
+                  class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
+            Cancel
+          </button>
+          
+        </div>
         
       </div>
       

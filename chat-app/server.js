@@ -322,6 +322,104 @@ async function loadHistoricalMessages(socket) {
 
 }
 
+/**
+ * Loads paginated historical messages for a socket
+ * This allows users to load more messages as they scroll up
+ * 
+ * @param {Object} socket - The user's connection
+ * @param {number} offset - How many messages to skip (for pagination)
+ * @param {number} limit - How many messages to load
+ */
+async function loadPaginatedMessages(socket, offset = 0, limit = 50) {
+
+    try {
+
+        // Get paginated messages from our database
+        const messages = await handleRedisOperation(
+
+            () => valkeyClient.lrange(MESSAGE_KEYS.CHAT_MESSAGES, offset, offset + limit - 1),
+            'paginated messages retrieval'
+
+        );
+        
+        // Convert the stored strings back into JavaScript objects
+        const parsedMessages = messages.map(item => JSON.parse(item));
+        
+        // Send the paginated messages to the user
+        socket.emit('paginated_messages', { 
+            messages: parsedMessages, 
+            hasMore: messages.length === limit,
+            offset: offset + messages.length
+
+        });
+
+    } catch (error) {
+
+        // If we can't load the messages, let the user know
+        console.error('Failed to load paginated messages:', error);
+        socket.emit('error', { 
+
+            message: 'Failed to load more messages.' 
+
+        });
+
+    }
+
+}
+
+/**
+ * Clears all chat history from the database
+ * This removes all stored messages and notifies all connected clients
+ * 
+ * @param {Object} socket - The user's connection who requested the clear
+ */
+async function clearChatHistory(socket) {
+
+    // First, make sure they've picked a username (security check)
+    if (!socket.username) {
+
+        socket.emit('error', { 
+
+            message: 'Please select a username before clearing chat history.' 
+
+        });
+        return;
+
+    }
+    
+    try {
+
+        // Clear all messages from our database
+        await handleRedisOperation(
+
+            () => valkeyClient.del(MESSAGE_KEYS.CHAT_MESSAGES),
+            'chat history clearing'
+
+        );
+        
+        logUserActivity('Chat history cleared', socket.id, socket.username);
+        
+        // Notify all connected clients that history was cleared
+        io.emit('history_cleared', { 
+            clearedBy: socket.username,
+            timestamp: new Date()
+            
+        });
+
+    } catch (error) {
+
+        // If clearing failed, let the user know
+        console.error('Failed to clear chat history:', error);
+        socket.emit('error', { 
+
+            message: 'Failed to clear chat history. Please try again.' 
+
+        });
+
+    }
+
+}
+
 // Socket.IO Connection Handler
 // ============================
 // This is the main function that runs when someone connects to our chat
@@ -338,6 +436,8 @@ io.on('connection', async (socket) => {
     // Set up listeners for different types of messages they might send
     socket.on('select_username', (data) => handleUsernameSelection(socket, data));
     socket.on('message', (data) => handleMessage(socket, data));
+    socket.on('load_more_messages', (data) => loadPaginatedMessages(socket, data.offset, data.limit));
+    socket.on('clear_history', () => clearChatHistory(socket));
     socket.on('disconnect', () => handleDisconnection(socket));
 
 });

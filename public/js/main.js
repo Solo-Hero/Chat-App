@@ -12,6 +12,8 @@ const socket = io();
 // Application state - keeping track of important information
 // This is like our app's memory - it remembers things between different actions
 let selectedUsername = null; // We'll store the user's chosen name here once they pick one
+let loadedMessageCount = 0;  // How many messages we've loaded from the server
+let hasMoreMessages = true;  // Whether there are more messages to load
 
 // DOM Elements (cached for performance)
 // Instead of searching for these elements every time we need them,
@@ -26,7 +28,12 @@ const elements = {
     chatInterface: document.querySelector('.grid.h-screen > div'), // The main chat area (hidden until username is picked)
     messageForm: document.getElementById('message-form'),         // The form for sending messages
     messageInput: document.getElementById('message'),             // The text area where they type messages
-    chatMessages: document.getElementById('chat-messages')        // The container where all messages appear
+    chatMessages: document.getElementById('chat-messages'),       // The container where all messages appear
+    loadMoreBtn: document.getElementById('load-more-btn'),        // Button to load more messages
+    clearHistoryBtn: document.getElementById('clear-history-btn'), // Button to clear chat history
+    clearConfirmationModal: document.getElementById('clear-confirmation-modal'), // Confirmation modal
+    confirmClearBtn: document.getElementById('confirm-clear'),    // Confirm clear button
+    cancelClearBtn: document.getElementById('cancel-clear')       // Cancel clear button
     
 };
 
@@ -236,14 +243,119 @@ function generateMessageHTML(username, timestamp, message) {
  * @param {string} username - Who sent the message
  * @param {Date|string} timestamp - When they sent it
  * @param {string} message - What they said
+ * @param {boolean} prepend - If true, adds message at the top (for loading older messages)
  */
-function addMessageToChat(username, timestamp, message) {
+function addMessageToChat(username, timestamp, message, prepend = false) {
     
     const html = generateMessageHTML(username, timestamp, message); // Create the HTML
     const element = document.createElement('li');                    // Create a new list item
     element.innerHTML = html;                                       // Put the HTML inside it
-    elements.chatMessages.appendChild(element);                     // Add it to the chat
-    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight; // Scroll to the bottom
+    
+    if (prepend) {
+        // Add at the top for older messages
+        elements.chatMessages.insertBefore(element, elements.chatMessages.firstChild);
+    } else {
+        // Add at the bottom for new messages
+        elements.chatMessages.appendChild(element);
+        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight; // Scroll to the bottom
+    }
+    
+}
+
+/**
+ * Loads more messages from the server
+ * This function requests older messages when the user clicks "Load More"
+ */
+function loadMoreMessages() {
+    
+    if (!hasMoreMessages) return; // Don't load if there are no more messages
+    
+    // Show loading state
+    elements.loadMoreBtn.textContent = 'Loading...';
+    elements.loadMoreBtn.disabled = true;
+    
+    // Request more messages from the server
+    socket.emit('load_more_messages', {
+        offset: loadedMessageCount,
+        limit: 50 // Load 50 messages at a time
+    });
+    
+}
+
+/**
+ * Handles loading more messages from server
+ * This function processes the response when we request more messages
+ * 
+ * @param {Object} data - The server's response with messages and pagination info
+ */
+function handleLoadMoreMessages(data) {
+    
+    const { messages, hasMore, offset } = data;
+    
+    // Add each message to the top of the chat (older messages)
+    messages.forEach(message => {
+        addMessageToChat(message.username, message.timestamp, message.message, true);
+    });
+    
+    // Update our state
+    loadedMessageCount = offset;
+    hasMoreMessages = hasMore;
+    
+    // Update the button
+    if (hasMoreMessages) {
+        elements.loadMoreBtn.textContent = 'Load More';
+        elements.loadMoreBtn.disabled = false;
+        elements.loadMoreBtn.classList.remove('hidden');
+    } else {
+        elements.loadMoreBtn.classList.add('hidden');
+    }
+    
+}
+
+/**
+ * Shows the clear history confirmation modal
+ * This function displays a safety check before clearing all messages
+ */
+function showClearConfirmation() {
+    
+    elements.clearConfirmationModal.classList.remove('hidden');
+    
+}
+
+/**
+ * Hides the clear history confirmation modal
+ * This function closes the confirmation dialog
+ */
+function hideClearConfirmation() {
+    
+    elements.clearConfirmationModal.classList.add('hidden');
+    
+}
+
+/**
+ * Clears all messages from the chat display
+ * This function removes all messages from the screen
+ */
+function clearChatDisplay() {
+    
+    elements.chatMessages.innerHTML = '';
+    loadedMessageCount = 0;
+    hasMoreMessages = true;
+    elements.loadMoreBtn.classList.add('hidden');
+    
+}
+
+/**
+ * Handles clearing chat history
+ * This function sends the clear request to the server
+ */
+function handleClearHistory() {
+    
+    // Hide the confirmation modal
+    hideClearConfirmation();
+    
+    // Send clear request to server
+    socket.emit('clear_history');
     
 }
 
@@ -299,9 +411,28 @@ socket.on('message', function(data) {
 socket.on('historical_messages', function(messages) {
     
     elements.chatMessages.innerHTML = ''; // Clear any old messages first
+    loadedMessageCount = messages.length; // Update our count
+    hasMoreMessages = messages.length >= 50; // Assume there might be more if we got 50+ messages
+    
     messages.forEach(message => {         // Go through each old message
         addMessageToChat(message.username, message.timestamp, message.message); // And add it to the chat
     });
+    
+    // Show/hide load more button based on whether there might be more messages
+    if (hasMoreMessages) {
+        elements.loadMoreBtn.classList.remove('hidden');
+    }
+    
+});
+
+// When we request more messages, the server sends us paginated results
+socket.on('paginated_messages', handleLoadMoreMessages);
+
+// When someone clears the chat history, we need to clear our display too
+socket.on('history_cleared', function(data) {
+    
+    clearChatDisplay();
+    console.log(`Chat history cleared by ${data.clearedBy}`);
     
 });
 
@@ -363,6 +494,25 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             handleMessageSubmit(event);
             
+        }
+        
+    });
+    
+    // Set up the load more messages button
+    elements.loadMoreBtn.addEventListener('click', loadMoreMessages);
+    
+    // Set up the clear history button - show confirmation modal
+    elements.clearHistoryBtn.addEventListener('click', showClearConfirmation);
+    
+    // Set up the clear confirmation modal buttons
+    elements.confirmClearBtn.addEventListener('click', handleClearHistory);
+    elements.cancelClearBtn.addEventListener('click', hideClearConfirmation);
+    
+    // Close modal when clicking outside of it
+    elements.clearConfirmationModal.addEventListener('click', function(event) {
+        
+        if (event.target === elements.clearConfirmationModal) {
+            hideClearConfirmation();
         }
         
     });

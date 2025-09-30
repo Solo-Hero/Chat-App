@@ -84,7 +84,7 @@ Here's how to get it running:
 
 2. **Start Valkey server:**
    ```bash
-   sudo systemctl start valkey.service
+   systemctl start valkey.service
    ```
 
 3. **Navigate to the project folder:**

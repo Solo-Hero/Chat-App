@@ -19,13 +19,13 @@ const CONFIG = {
     port: process.env.PORT || 3000,        // What port to run on (3000 is our default, but we can change it)
     redis: {
 
-        host: 'localhost',                 // Where our Redis database lives (on the same computer for now)
+        host: 'localhost',                 // Where our Redis database lives
         port: 6379   
                               // Redis's default port number
     },
     cors: {    
                                    // CORS settings - this controls who can connect to our server
-        origin: '*',                      // Allow connections from anywhere (good for development)
+        origin: '*',                      // Allow connections from anywhere
         methods: ['GET', 'POST']          // Only allow these types of requests for security
 
     }
@@ -35,7 +35,7 @@ const CONFIG = {
 // Redis/Valkey Client Setup
 // =========================
 // Redis is our database - it stores all the chat messages so they don't get lost
-// We're using Valkey, which is compatible with Redis but has a different name
+// We're using Valkey, which is compatible with Redis
 // Think of it like a filing cabinet that never forgets anything
 
 const valkeyClient = new Redis({
@@ -54,7 +54,7 @@ valkeyClient.on('error', (err) => {
 
 });
 
-// When we successfully connect to the database, celebrate!
+// When we successfully connect to the database let us know.
 valkeyClient.on('connect', () => {
 
     console.log('Connected to Valkey');
@@ -97,7 +97,7 @@ const io = new Server(httpServer, {
 
 // Application State
 // =================
-// These are like the server's memory - they keep track of important information
+// These are like the server's memory. They keep track of important information
 // while the server is running
 
 const activeUsernames = new Set();        // A list of all usernames currently being used
